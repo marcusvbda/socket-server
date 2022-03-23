@@ -1,0 +1,9 @@
+/node_modules
+/.env
+/.env.development
+/tokens
+
+/frontend/.env
+/frontend/node_modules
+
+/.wwebjs_auth/*
