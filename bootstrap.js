@@ -20,10 +20,9 @@ app.post('/postback-mockup', async (req, res) => {
   res.json(params);
 });
 
-const port = process.env.APP_PORT;
+const port = process.env.PORT || 3000;
 http.listen(port, () => {
-  const uri = process.env.APP_URL;
-  debug.log(`listening on ${uri}:${port}`);
+  debug.log(`Express server listening on port ${port}`);
 });
 
 const isProduction = process.env.NODE_ENV === 'production';

@@ -1,4 +1,4 @@
-require('dotenv');
+require('dotenv').config({ path: '.env' });
 
 require('module-alias').addAliases({
   '~': __dirname,
