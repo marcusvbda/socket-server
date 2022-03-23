@@ -21,19 +21,17 @@ const io = SocketIo(http, {
   },
 });
 
-io.sockets.on('connection', (socket) => {
-  socket.emit('connected', { id: socket.id });
-  socket.on('join', async ({ username, password }) => {
-    const user = await checkUser(username, password);
-    if (user) {
-      sessions[socket.id] = socket;
-      socket.emit('joined', { id: socket.id });
-    } else {
-      socket.emit('error', { message: 'Invalid username or password' });
-    }
-  });
+io.sockets.on('connection', async (socket) => {
+  const { uid, username, password } = socket.handshake.query;
+  const user = await checkUser(username, password);
+  if (user) {
+    sessions[uid] = socket;
+    socket.emit('connected', { uid });
+  } else {
+    socket.emit('error', { message: 'Invalid credentials' });
+  }
   socket.on('disconnect', () => {
-    delete sessions[socket.id];
+    delete sessions[uid];
   });
 });
 
@@ -44,12 +42,11 @@ app.post('/encrypt', async (req, res) => {
 });
 
 app.post('/socket-emit', Auth, (req, res) => {
-  const socketId = req.body.socket_id;
-
-  const socket = sessions[socketId];
+  const uid = req.body.socket_id;
+  const event = req.body.event;
+  const data = req.body.data;
+  const socket = sessions[uid];
   if (socket) {
-    const event = req.body.event;
-    const data = req.body.data;
     socket.emit(event, data);
   }
   res.send(true);
