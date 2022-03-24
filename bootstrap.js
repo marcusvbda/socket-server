@@ -22,7 +22,7 @@ app.post('/postback-mockup', async (req, res) => {
 
 const port = process.env.PORT || 3000;
 http.listen(port, () => {
-  debug.log(`Express server listening on port ${port}`);
+  debug.log(`http://localhost:${port}`);
 });
 
 const isProduction = process.env.NODE_ENV === 'production';

@@ -24,14 +24,18 @@ io.sockets.on('connection', async (socket) => {
   const { uid, username, password } = socket.handshake.query;
   const user = await checkUser(username, password);
   if (user) {
-    sessions[uid] = socket;
-    socket.emit('connected', { uid });
+    const channel = `${user.id}_${uid}`;
+    if (!sessions[channel]) {
+      sessions[channel] = [];
+    }
+    sessions[channel].push(socket);
+    socket.emit('connected', { channel, id: socket.id });
+    socket.on('disconnect', () => {
+      sessions[channel] = sessions[channel].filter((x) => x.id !== socket.id);
+    });
   } else {
     socket.emit('error', { message: 'Invalid credentials' });
   }
-  socket.on('disconnect', () => {
-    delete sessions[uid];
-  });
 });
 
 app.post('/encrypt', async (req, res) => {
@@ -44,9 +48,10 @@ app.post('/socket-emit', Auth, (req, res) => {
   const uid = req.body.socket_id;
   const event = req.body.event;
   const data = req.body.data;
-  const socket = sessions[uid];
-  if (socket) {
+  const channel = `${req.user.id}_${uid}`;
+  const sockets = sessions[channel] || [];
+  sockets.forEach((socket) => {
     socket.emit(event, data);
-  }
+  });
   res.send(true);
 });
