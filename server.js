@@ -21,7 +21,8 @@ const io = SocketIo(http, {
 });
 
 io.sockets.on('connection', async (socket) => {
-  const { uid, username, password } = socket.handshake.query;
+  const { uid, token } = socket.handshake.query;
+  const { username, password } = JSON.parse(Buffer.from(token, 'base64').toString());
   const user = await checkUser(username, password);
   if (user) {
     const channel = `${user.id}_${uid}`;
